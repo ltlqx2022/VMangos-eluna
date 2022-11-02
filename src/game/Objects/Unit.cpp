@@ -2447,8 +2447,9 @@ bool Unit::IsSpellBlocked(SpellCaster* pCaster, Unit* pVictim, SpellEntry const*
 float Unit::RollMagicResistanceMultiplierOutcomeAgainst(float resistanceChance, SpellSchoolMask schoolMask, DamageEffectType damagetype, SpellEntry const* spellProto) const
 {
     // Magic vulnerability instead of magic resistance:
-    if (resistanceChance < 0)
-        return resistanceChance;
+    bool negative;
+    if (negative = (resistanceChance < 0.0f))
+        resistanceChance = -resistanceChance;
 
     resistanceChance *= 100.0f;
 
@@ -2463,13 +2464,13 @@ float Unit::RollMagicResistanceMultiplierOutcomeAgainst(float resistanceChance, 
         {
             // NOSTALRIUS: Some DoTs follow normal resist rules. Need to find which ones, why and how.
             // We have a video proof for the following ones.
-        case 23461:     // Vaelastrasz's Flame Breath
-        case 24818:     // Nightmare Dragon's Noxious Breath
-        case 25812:     // Lord Kri's Toxic Volley
-        case 28531:     // Sapphiron's Frost Aura
-            break;
-        default:
-            resistanceChance *= 0.1f;
+            case 23461:     // Vaelastrasz's Flame Breath
+            case 24818:     // Nightmare Dragon's Noxious Breath
+            case 25812:     // Lord Kri's Toxic Volley
+            case 28531:     // Sapphiron's Frost Aura
+                break;
+            default:
+                resistanceChance *= 0.1f;
         }
     }
 
@@ -2507,7 +2508,7 @@ float Unit::RollMagicResistanceMultiplierOutcomeAgainst(float resistanceChance, 
     DEBUG_UNIT(this, DEBUG_SPELL_COMPUTE_RESISTS, "Partial resist : chances %.2f:%.2f:%.2f:%.2f:%.2f. Hit resist chance %f",
         resist0, resist25, resist50, resist75, resist100, resistanceChance);
 
-    return resistCnt;
+    return (negative ? -resistCnt : resistCnt);
 }
 
 bool Unit::IsEffectResist(SpellEntry const* spell, int eff) const
